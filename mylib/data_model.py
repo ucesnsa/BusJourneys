@@ -4,7 +4,7 @@ from dataclasses import dataclass
 class Journey:
     # UserId is the same as the prestigeid
     UserId: str
-    JourneyMode: str
+
 
 class User:
     # UserId is the same as the prestigeid
