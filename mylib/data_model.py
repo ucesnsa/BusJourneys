@@ -7,7 +7,7 @@ class TransportEnum(Enum):
     RAIL = 2
     TRAM = 3
 
-@dataclass(frozen=True, order=True)
+@dataclass(frozen=False, order=True)
 class Journey:
     # UserId is the same as the prestigeid
     UserId: str
@@ -17,8 +17,8 @@ class Journey:
     EndTime:datetime
     StartStation:str
     EndStation:str
-    StartStationInferred=str
-    EndStationInferred=str
+    StartStationInferred:str
+    EndStationInferred:str
 
 @dataclass(frozen=True, order=True)
 class User:

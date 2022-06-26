@@ -11,7 +11,7 @@ def get_LTDS_journeys(userid, verbos=0):
 
         query = "SELECT r.prestigeid,r.daykey,to_date(r.date_key, 'MM/DD/YYYY') as date_key, r.devicekey, r.routeid, " \
                 "r.jnystatus, r.mode, r.station_name as stationofentrykey, r.nlc,r.exit_station_name,  " \
-                "r.end_to_end_jny ,r.transactiontime, r.end_time, " \
+                "r.end_to_end_jny ,r.transactiontime, " \
                 "TO_CHAR((r.transactiontime || 'minute')::interval, 'HH24:MI:SS') as start_time," \
                 "TO_CHAR((r.end_time || 'minute')::interval, 'HH24:MI:SS') as end_time " \
                 "FROM matched_journeys r " \
@@ -85,11 +85,17 @@ def get_user_detail(userid, verbos=0):
 def convert_to_Journey(row, verbos):
     e1 = dm.TransportEnum
     if row['mode'] == 'Tram' :
-        e1 = dm.TransportEnum.TRAM
+        e1 = dm.TransportEnum.TRAM.name
     elif row['mode'] == 'Bus' :
-        e1 = dm.TransportEnum.BUS
+        e1 = dm.TransportEnum.BUS.name
     elif row['mode'] == 'Rail' :
-        e1 = dm.TransportEnum.RAIL
+        e1 = dm.TransportEnum.RAIL.name
 
-    j = dm.Journey(row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'])
+    #if (verbos == 1):
+    #   print (row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'])
+
+    j = dm.Journey(row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'],'NA','NA')
+
+    if (verbos == 1):
+        print(j)
     return j
