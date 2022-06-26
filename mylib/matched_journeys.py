@@ -1,7 +1,7 @@
 import pandas as pd
 import sqlalchemy as db
 from sqlalchemy import exc
-from dataclasses import dataclass
+from mylib import data_model as dm
 
 def get_LTDS_journeys(userid, verbos=0):
     try:
@@ -73,9 +73,23 @@ def get_user_detail(userid, verbos=0):
             print(query)
         ResultSet = connection.execute(query)
         dfUserDetail = pd.DataFrame(ResultSet)
+        u1 = dm.User(dfUserDetail['userid'][0],dfUserDetail['home_location'][0],dfUserDetail['work_location'][0])
 
         if (verbos == 1):
-            print('User Row' + str(dfUserDetail.shape))
-        return dfUserDetail
+            print(u1)
+        return u1
     except exc.SQLAlchemyError:
         exit("Encountered general SQLAlchemyError!")
+
+# converts journeys dataframe row to Journey class object
+def convert_to_Journey(row, verbos):
+    e1 = dm.TransportEnum
+    if row['mode'] == 'Tram' :
+        e1 = dm.TransportEnum.TRAM
+    elif row['mode'] == 'Bus' :
+        e1 = dm.TransportEnum.BUS
+    elif row['mode'] == 'Rail' :
+        e1 = dm.TransportEnum.RAIL
+
+    j = dm.Journey(row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'])
+    return j

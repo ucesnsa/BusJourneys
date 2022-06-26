@@ -4,7 +4,7 @@ from sqlalchemy import exc
 from dataclasses import dataclass
 from mylib import matched_journeys as mj
 from mylib import oyster_journeys as oj
-from mylib import dataclass as dm
+from mylib import data_model as dm
 
 #verbos - use 1 for debugging and 0 for normal run
 verbos = 1
@@ -14,12 +14,11 @@ dfUser = mj.get_all_users(verbos)
 
 # select one user from the list user, and loop through all the users
 userid = dfUser['userid'][1]
-print ('user',userid)
 #userid = '105124208'
 
 # 1. select home and work location of the user from LTDS survey
-dfUserDetail = mj.get_user_detail(userid,verbos)
-print (dfUserDetail)
+usr = mj.get_user_detail(userid,verbos)
+
 
 # 2. get user journeys and unique days
 dfJourneys, dfDays = mj.get_LTDS_journeys(userid,verbos)
@@ -30,7 +29,18 @@ process_date = dfDays['date_key'][1]
 print ('process_date', process_date)
 
 # ordered by date and time
-dfJourneys_day = dfJourneys.loc[(dfJourneys['date_key'] == process_date)]
+dfJourneys_by_date = dfJourneys.loc[(dfJourneys['date_key'] == process_date)]
+
+
+# create a list of journey objects
+lstJourneys = list()
+journey_current  = mj.convert_to_Journey(dfJourneys_by_date.iloc[0],verbos)
+
+#create a new journey object
+#journey_prev = dm.Journey('A', 'B', dm.TransportEnum.TUBE, '', '', '', '')
+#journey_next = dm.Journey('A', 'B', dm.TransportEnum.TUBE, '', '', '', '')
+
+
 
 # 4. apply bus journey inference algorithm
 # select the 1st bus journey as current_journey, and two additional journeys if available (previous_journey and next_journey)
@@ -45,11 +55,18 @@ dfJourneys_day = dfJourneys.loc[(dfJourneys['date_key'] == process_date)]
 # select the next bus journey as current_journey, and two additional journeys if available (previous_journey and next_journey)
 # continue till no more bus journeys available on the day
 
+# add new journey to the list
+lstJourneys.append(journey_current)
+
+dfJourneyDataFinal = pd.DataFrame(lstJourneys)
+#print (dfJourneyDataFinal)
+
+
 filename = 'Data_sample.xlsx'
 writer = pd.ExcelWriter(filename)
 
 # write dataframe to excel
-dfJourneys_day.to_excel(writer)
+dfJourneyDataFinal.to_excel(writer)
 
 # save the excel
 writer.save()
