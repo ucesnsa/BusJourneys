@@ -11,20 +11,21 @@ verbos = 0
 
 # drop table , used to save the results
 du.drop_db_table()
+print ('Cleared DB table to sort the results. ')
 
 # get all users
 dfUser = mj.get_all_users(verbos)
 print ('Processing ', end='')
 for ind1, row in dfUser.iterrows():
     print('.', end='')
-    if ind1 == 12:
-        break
+#    if ind1 == 12:
+#        break
 
     # select one user from the list user, and loop through all the users
     userid = row['userid']
 
     #userid = dfUser['userid'][1]
-    #userid = '105124208'
+    #userid = '518652322'
 
     # 1. select home and work location of the user from LTDS survey
     usr = mj.get_user_detail(userid,verbos)
@@ -48,8 +49,10 @@ for ind1, row in dfUser.iterrows():
         for index, row in dfJourneys_by_date.iterrows():
             #print (row)
             journey_current = mj.convert_to_Journey(row, verbos=0)
+            if index == len(dfJourneys_by_date) -1:
+                journey_current.IsLastJourney = True
 
-            if index+1 < len(dfJourneys_by_date) -1:
+            if index+1 < len(dfJourneys_by_date) :
                 next_index = index + 1
             else:
                 next_index = -1
@@ -96,4 +99,6 @@ for ind1, row in dfUser.iterrows():
 # save the excel
 #writer.save()
 #print("DataFrame is exported successfully to Excel File.")
+print (' complete')
+print ('Check db table for results')
 exit()

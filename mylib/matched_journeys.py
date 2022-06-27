@@ -94,7 +94,7 @@ def convert_to_Journey(row, verbos):
     #if (verbos == 1):
     #   print (row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'])
 
-    j = dm.Journey(row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'],'NA','NA')
+    j = dm.Journey(row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'],'NA','NA',False)
 
     if (verbos == 1):
         print(j)
