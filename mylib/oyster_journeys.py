@@ -28,3 +28,5 @@ def get_SCD_journeys(userid, verbos=0):
     except exc.SQLAlchemyError:
         exit("Encountered general SQLAlchemyError!")
 
+def test():
+    print ('hell')
