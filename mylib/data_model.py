@@ -21,6 +21,8 @@ class Journey:
     EndStationInferred:str
     IsLastJourney:bool
     BusNo:str
+    BusStopId:str
+    Direction:bool
 
 @dataclass(frozen=True, order=True)
 class User:
