@@ -10,7 +10,9 @@ from mylib import db_utils as du
 verbos = 0
 
 # drop table , used to save the results
-du.drop_db_table()
+tbl_name = 'bus_inference'
+
+du.drop_db_table(tbl_name)
 print ('Cleared DB table to sort the results. ')
 
 # get all users
@@ -86,7 +88,7 @@ for ind1, row in dfUser.iterrows():
             lstJourneys.append(journey_current)
 
     dfJourneyDataFinal = pd.DataFrame(lstJourneys)
-    du.write_to_db_table(dfJourneyDataFinal)
+    du.write_to_db_table(dfJourneyDataFinal,tbl_name)
     #print (dfJourneyDataFinal)
 
 

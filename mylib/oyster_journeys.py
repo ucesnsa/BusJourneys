@@ -16,9 +16,21 @@ def get_SCD_journeys(userid, verbos=0):
         ResultSet = connection.execute(query)
         dfJourneys = pd.DataFrame(ResultSet)
 
+        query2 = "SELECT distinct r.prestigeid,  daykey " \
+                 "FROM tbl_rawdata r " \
+                 "where PRESTIGEID = '" + userid + "' " \
+                 "order by daykey"
+
         if (verbos == 1):
-            print('Data size' + str(dfJourneys.shape))
-        return dfJourneys
+            print(query2)
+        ResultSet = connection.execute(query2)
+        dfdays = pd.DataFrame(ResultSet)
+
+        if (verbos == 1):
+            print("'" + userid + "'" +" - journey data size " + str(dfJourneys.shape))
+            print("'" + userid + "'" + " - journey days size " + str(dfdays.shape))
+
+        return dfJourneys,dfdays
     except exc.SQLAlchemyError:
         exit("Encountered general SQLAlchemyError!")
 

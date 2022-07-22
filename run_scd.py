@@ -1,11 +1,89 @@
-import mylib.oyster_journeys as t
+import mylib.oyster_journeys as ot
+from mylib import db_utils as du
+import pandas as pd
+from mylib import bus_inference as bi
+from mylib import data_model as dm
 
 def run_all(name):
-    dfData = t.get_SCD_journeys('63304617')
-    print(dfData.shape)
-    for index, row in dfData.iterrows():
-        journey_current = t.convert_to_Journey(row, verbos=0)
-        print(journey_current)
+#    dfData = ot.get_SCD_journeys('63304617')
+
+    #verbos - use 1 for debugging and 0 for normal run
+    verbos = 0
+
+    # drop table , used to save the results
+    tbl_name = 'bus_inference_scd'
+
+    du.drop_db_table(tbl_name)
+    print ('Cleared DB table to sort the results. ')
+
+    # get all users
+    dfUser = ot.get_all_users(verbos)
+    print ('Processing ', end='')
+    for ind1, row in dfUser.iterrows():
+        print('.', end='')
+        if ind1 == 12:
+            break
+
+        # select one user from the list user, and loop through all the users
+        userid = row['userid']
+        userid = '63304617'
+        # 2. get user journeys and unique days
+        dfJourneys, dfDays = ot.get_SCD_journeys(userid, verbos)
+
+        # create an empty list for user journeys
+        lstJourneys = list()
+
+        # 3. select days in order
+        for index1, row in dfDays.iterrows():
+            process_date = row['daykey']
+            #print ('process_date', process_date)
+
+            # ordered by date and time
+            dfJourneys_by_date = pd.DataFrame.copy(dfJourneys.loc[(dfJourneys['daykey'] == process_date)])
+            dfJourneys_by_date.reset_index(inplace=True)
+            #loop through all the journeys on the selected date
+            for index, row in dfJourneys_by_date.iterrows():
+                #print (row)
+                journey_current = ot.convert_to_Journey(row, verbos=0)
+                if index == len(dfJourneys_by_date) -1:
+                    journey_current.IsLastJourney = True
+
+                if index+1 < len(dfJourneys_by_date) :
+                    next_index = index + 1
+                else:
+                    next_index = -1
+
+                if index - 1 >= 0 :
+                    prev_index = index - 1
+                else:
+                    prev_index = -1
+
+                if journey_current.TransportMode == ot.TransportEnum.BUS.name:
+
+                    if prev_index != -1:
+                        #print(dfJourneys_by_date.iloc[prev_index])
+                        journey_prev = ot.convert_to_Journey(dfJourneys_by_date.iloc[prev_index], verbos=0)
+                    else:
+                        journey_prev = None
+
+                    if next_index != -1:
+                        #print(dfJourneys_by_date.iloc[next_index])
+                        journey_next = ot.convert_to_Journey(dfJourneys_by_date.iloc[next_index], verbos=0)
+                    else:
+                        journey_next = None
+
+#                    journey_current = bi.infer_bus_info(journey_current,journey_next,journey_prev,usr,verbos)
+                    #print (journey_current)
+
+                # add new journey to the list
+                lstJourneys.append(journey_current)
+
+        dfJourneyDataFinal = pd.DataFrame(lstJourneys)
+        du.write_to_db_table(dfJourneyDataFinal,tbl_name)
+
+    print (' complete')
+    print ('Check db table for results')
+    exit()
 
 
 # Press the green button in the gutter to run the script.
