@@ -11,13 +11,16 @@ def run_all(name):
     verbos = 0
 
     # drop table , used to save the results
+
+
+    db_name = 'SCD_230722'
     tbl_name = 'bus_inference_scd'
 
-    du.drop_db_table(tbl_name)
+    du.drop_db_table(db_name, tbl_name)
     print ('Cleared DB table to sort the results. ')
 
     # get all users
-    dfUser = ot.get_all_users(verbos)
+    dfUser = ot.get_all_users(db_name, verbos)
     print ('Processing ', end='')
     for ind1, row in dfUser.iterrows():
         print('.', end='')
@@ -28,7 +31,7 @@ def run_all(name):
         userid = row['userid']
         userid = '63304617'
         # 2. get user journeys and unique days
-        dfJourneys, dfDays = ot.get_SCD_journeys(userid, verbos)
+        dfJourneys, dfDays = ot.get_SCD_journeys(userid, db_name, verbos)
 
         # create an empty list for user journeys
         lstJourneys = list()
@@ -58,7 +61,7 @@ def run_all(name):
                 else:
                     prev_index = -1
 
-                if journey_current.TransportMode == ot.TransportEnum.BUS.name:
+                if journey_current.TransportMode == dm.TransportEnum.BUS.name:
 
                     if prev_index != -1:
                         #print(dfJourneys_by_date.iloc[prev_index])
@@ -79,7 +82,7 @@ def run_all(name):
                 lstJourneys.append(journey_current)
 
         dfJourneyDataFinal = pd.DataFrame(lstJourneys)
-        du.write_to_db_table(dfJourneyDataFinal,tbl_name)
+        du.write_to_db_table(dfJourneyDataFinal,db_name,tbl_name)
 
     print (' complete')
     print ('Check db table for results')
@@ -89,3 +92,5 @@ def run_all(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     run_all('PyCharm')
+#    du.drop_db_table('SCD_230722', 'test_tbl')
+

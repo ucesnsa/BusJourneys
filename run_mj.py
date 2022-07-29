@@ -11,8 +11,9 @@ verbos = 0
 
 # drop table , used to save the results
 tbl_name = 'bus_inference'
+db_name = 'LTDS_Matched_Journeys'
 
-du.drop_db_table(tbl_name)
+du.drop_db_table(db_name, tbl_name)
 print ('Cleared DB table to sort the results. ')
 
 # get all users
@@ -88,7 +89,7 @@ for ind1, row in dfUser.iterrows():
             lstJourneys.append(journey_current)
 
     dfJourneyDataFinal = pd.DataFrame(lstJourneys)
-    du.write_to_db_table(dfJourneyDataFinal,tbl_name)
+    du.write_to_db_table(dfJourneyDataFinal, db_name, tbl_name)
     #print (dfJourneyDataFinal)
 
 

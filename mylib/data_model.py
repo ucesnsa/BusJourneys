@@ -13,16 +13,16 @@ class Journey:
     UserId: str
     JourneyDate: datetime
     TransportMode: TransportEnum
-    StartTime:datetime
-    EndTime:datetime
-    StartStation:str
-    EndStation:str
-    StartStationInferred:str
-    EndStationInferred:str
-    IsLastJourney:bool
-    BusNo:str
-    BusStopId:str
-    Direction:bool
+    StartTime: datetime
+    EndTime: datetime
+    StartStation: str
+    EndStation: str
+    StartStationInferred: str
+    EndStationInferred: str
+    IsLastJourney: bool
+    BusNo: str
+    BusStopId: str
+    Direction: bool
 
 @dataclass(frozen=True, order=True)
 class User:
