@@ -3,13 +3,13 @@ from mylib import data_model as dm
 
 
 def get_bus_stops_dictionary():
-    #    import os
-    #    cwd = os.getcwd()
-    #    print(cwd)
+    #import os
+    #cwd = os.getcwd()
+    #print(cwd)
     # create an empty dictionary
     bus_stop_dictionary = {}
     print('loading bus stops..')
-    file_name = "..\\data\\bus-stops-10-06-15.csv"
+    file_name = "data\\bus-stops-10-06-15.csv"
     df = pd.read_csv(file_name)
     print(df.shape)
     for index, row in df.iterrows():
@@ -37,4 +37,6 @@ def convert_to_bus_stop(row, verbos):
 
     if b != None:
         return b.Stop_Code_LBSL, b
+
+
 
