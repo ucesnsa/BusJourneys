@@ -24,12 +24,12 @@ def run_all(name):
     print ('Processing ', end='')
     for ind1, row in dfUser.iterrows():
         print('.', end='')
-        if ind1 == 12:
+        if ind1 == 100:
             break
 
         # select one user from the list user, and loop through all the users
         userid = row['userid']
-        userid = '63304617'
+#        userid = '63304617'
         # 2. get user journeys and unique days
         dfJourneys, dfDays = ot.get_SCD_journeys(userid, db_name, verbos)
 

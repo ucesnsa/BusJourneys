@@ -31,3 +31,16 @@ class User:
     HomeLocation: str
     WorkLocation: str
 
+
+
+@dataclass(frozen=False, order=True)
+class BusStop:
+    Stop_Code_LBSL: str
+    Bus_Stop_Code: str
+    Naptan_Atco: str
+    Stop_Name: str
+    Location_Easting: str
+    Location_Northing: str
+    Heading: str
+    Stop_Area: str
+    Virtual_Bus_Stop: str
