@@ -14,7 +14,7 @@ def run_all(name):
     # drop table , used to save the results
 
 
-    db_name = 'SCD_230722'
+    db_name = 'scd_bus_journeys'
     tbl_name = 'bus_inference_scd'
 
     du.drop_db_table(db_name, tbl_name)
@@ -92,9 +92,14 @@ def run_all(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+#    db_name = 'scd_bus_journeys'
+#    tbl_name = 'bus_inference_scd'
+
     run_all('PyCharm')
 #    du.drop_db_table('SCD_230722', 'test_tbl')
 #    oj_obj = ott.OysterJourney()
 #    dc = oj_obj.bus_stop_dic
 #    print('dc length',len(dc))
 #    print('test', dc['26826'].Stop_Name)
+#    userid = '63304617'
+#    oj_obj.get_SCD_journeys(userid, db_name)
