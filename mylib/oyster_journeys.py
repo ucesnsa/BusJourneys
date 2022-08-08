@@ -25,6 +25,7 @@ class OysterJourney(object):
 
     def get_SCD_journeys(self,userid, db_name,verbos=0):
         try:
+            lstdays = []
             query = Path("queries\\SCD_Journeys_query.txt").read_text()
             query = query.replace("@userid", userid)
             # get a connection, if a connect cannot be made an exception will be raised here
@@ -42,14 +43,23 @@ class OysterJourney(object):
 
             if (verbos == 1):
                 print(query2)
-            ResultSet = connection.execute(query2)
-            dfdays = pd.DataFrame(ResultSet)
+
+            #ResultSet = connection.execute(query2)
+            # dfdays = pd.DataFrame(ResultSet)
+
+            if dfJourneys.size == 0:
+                return dfJourneys, lstdays
+
+            lstdays = dfJourneys['daykey'].unique()
+            #print(sorted(lstdays))
+
+
 
             if (verbos == 1):
                 print("'" + userid + "'" +" - journey data size " + str(dfJourneys.shape))
-                print("'" + userid + "'" + " - journey days size " + str(dfdays.shape))
+                print("'" + userid + "'" + " - journey days size " + str(lstdays.shape))
 
-            return dfJourneys,dfdays
+            return dfJourneys,lstdays
         except exc.SQLAlchemyError:
             exit("Encountered general SQLAlchemyError!")
 

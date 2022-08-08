@@ -30,16 +30,21 @@ def run_all(name):
 
         # select one user from the list user, and loop through all the users
         userid = row['userid']
-#        userid = '63304617'
+        #print (userid)
+
+        #userid = '10137295'
+
         # 2. get user journeys and unique days
-        dfJourneys, dfDays = oj_obj.get_SCD_journeys(userid, db_name, verbos)
+        dfJourneys, lstDays = oj_obj.get_SCD_journeys(userid, db_name, verbos)
+        if len(lstDays) == 0:
+            continue
 
         # create an empty list for user journeys
         lstJourneys = list()
 
         # 3. select days in order
-        for index1, row in dfDays.iterrows():
-            process_date = row['daykey']
+        for row in lstDays:
+            process_date = row
             #print ('process_date', process_date)
 
             # ordered by date and time

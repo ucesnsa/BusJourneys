@@ -8,7 +8,7 @@ select a.* from
   FROM tbl_rawdata r inner join tbl_daykey d on r.daykey = d.date_key
   where transactiontype = '12'
   and PRESTIGEID = '@userid'
-  limit 5) a
+  ) a
 
 union all
 
@@ -24,4 +24,5 @@ select b.* from
   left join tbl_station s2 on s2.nlc = r.nlc
   where transactiontype <> '12'
   and PRESTIGEID = '@userid'
-  limit 5) b
+  and r.nlc <> r.stationoffirstentry
+  ) b
