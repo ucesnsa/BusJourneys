@@ -25,7 +25,7 @@ def run_all(name):
     print ('Processing ', end='')
     for ind1, row in dfUser.iterrows():
         print('.', end='')
-        if ind1 == 100:
+        if ind1 == 50:
             break
 
 
@@ -89,7 +89,7 @@ def run_all(name):
                 lstJourneys.append(journey_current)
 
         dfJourneyDataFinal = pd.DataFrame(lstJourneys)
-        du.write_to_db_table(dfJourneyDataFinal,db_name,tbl_name)
+        du.write_to_db_table(dfJourneyDataFinal, db_name, tbl_name)
 
     print (' complete')
     print ('Check db table for results')

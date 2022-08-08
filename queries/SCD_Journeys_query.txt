@@ -22,7 +22,8 @@ select b.* from
   FROM tbl_rawdata r inner join tbl_daykey d on r.daykey = d.date_key
   left join tbl_station s1 on s1.nlc = r.stationoffirstentry
   left join tbl_station s2 on s2.nlc = r.nlc
-  where transactiontype <> '12'
+  where transactiontype = '62'
   and PRESTIGEID = '@userid'
   and r.nlc <> r.stationoffirstentry
+  and (r.stationoffirstentry not in ( '-1','0' ))
   ) b
