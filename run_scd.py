@@ -28,6 +28,7 @@ def run_all(name):
         if ind1 == 100:
             break
 
+
         # select one user from the list user, and loop through all the users
         userid = row['userid']
         #print (userid)

@@ -1,5 +1,5 @@
 select a.* from
-(SELECT daykey, prestigeid, calendar_dt,transactiontype,
+(SELECT distinct daykey, prestigeid, calendar_dt,transactiontype,
        stationoffirstentry, r.nlc,timeoffirstentry,transactiontime,
        ''::text as start_station_name,''::text as exit_station_name,
        TO_CHAR((r.transactiontime || 'minute')::interval, 'HH24:MI:SS') as start_time,
