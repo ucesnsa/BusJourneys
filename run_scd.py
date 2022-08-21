@@ -12,9 +12,9 @@ def run_all(name):
     verbos = 0
 
     # drop table , used to save the results
-    #source database name
-    db_name = 'SCD_230722'
-    #results table
+
+
+    db_name = 'scd_bus_journeys'
     tbl_name = 'bus_inference_scd'
 
     du.drop_db_table(db_name, tbl_name)
@@ -25,30 +25,50 @@ def run_all(name):
     print ('Processing ', end='')
     for ind1, row in dfUser.iterrows():
         print('.', end='')
-        if ind1 == 1:
+        # ind1 determines how many users to be processed
+        if ind1 == 10000:
             break
 
         # select one user from the list user, and loop through all the users
         userid = row['userid']
-        userid = '63304617'
+        #print (userid)
+
+        #userid = '10352511'
+
         # 2. get user journeys and unique days
-        dfJourneys, dfDays = oj_obj.get_SCD_journeys(userid, db_name, verbos)
+        dfJourneys, lstDays = oj_obj.get_SCD_journeys(userid, db_name, verbos)
+        if len(lstDays) == 0:
+            continue
+
+        dfJourneys = dfJourneys.sort_values(['daykey', 'start_time'])
 
         # create an empty list for user journeys
         lstJourneys = list()
 
+        journey_first_of_day = None
         # 3. select days in order
-        for index1, row in dfDays.iterrows():
-            process_date = row['daykey']
+        for row in lstDays:
+            process_date = row
             #print ('process_date', process_date)
 
             # ordered by date and time
             dfJourneys_by_date = pd.DataFrame.copy(dfJourneys.loc[(dfJourneys['daykey'] == process_date)])
             dfJourneys_by_date.reset_index(inplace=True)
             #loop through all the journeys on the selected date
+
+
             for index, row in dfJourneys_by_date.iterrows():
                 #print (row)
                 journey_current = oj_obj.convert_to_Journey(row, verbos=0)
+
+                # save the first journey of the day for the user
+                if index == 0:
+                    journey_first_of_day = journey_current
+
+                # proceed only if there are more than 1 journey in the day's data for the user
+                if len(dfJourneys_by_date) <= 1:
+                    continue
+
                 if index == len(dfJourneys_by_date) -1:
                     journey_current.IsLastJourney = True
 
@@ -76,14 +96,15 @@ def run_all(name):
                     else:
                         journey_next = None
 
-#                    journey_current = bi.infer_bus_info(journey_current,journey_next,journey_prev,usr,verbos)
+                    journey_current = bi.infer_bus_end_station(journey_current,journey_next,journey_prev, len(dfJourneys_by_date), journey_first_of_day, verbos)
+
                     #print (journey_current)
 
                 # add new journey to the list
                 lstJourneys.append(journey_current)
 
         dfJourneyDataFinal = pd.DataFrame(lstJourneys)
-        du.write_to_db_table(dfJourneyDataFinal,db_name,tbl_name)
+        du.write_to_db_table(dfJourneyDataFinal, db_name, tbl_name)
 
     print (' complete')
     print ('Check db table for results')
@@ -92,9 +113,14 @@ def run_all(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+#    db_name = 'scd_bus_journeys'
+#    tbl_name = 'bus_inference_scd'
+
     run_all('PyCharm')
 #    du.drop_db_table('SCD_230722', 'test_tbl')
 #    oj_obj = ott.OysterJourney()
 #    dc = oj_obj.bus_stop_dic
 #    print('dc length',len(dc))
 #    print('test', dc['26826'].Stop_Name)
+#    userid = '63304617'
+#    oj_obj.get_SCD_journeys(userid, db_name)

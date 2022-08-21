@@ -4,6 +4,7 @@ from sqlalchemy import exc
 from pathlib import Path
 from mylib import data_model as dm
 from mylib import reference_data as rd
+from mylib import db_connection as db
 
 class Singleton(type):
     _instances = {}
@@ -17,50 +18,54 @@ class Singleton(type):
 class OysterJourney(object):
     __metaclass__ = Singleton
     bus_stop_dic = {}
+    db_obj = None
 
     def __new__(cls, *args, **kwargs):
         print("Initialise OysterJourney class")
         cls.bus_stop_dic = rd.get_bus_stops_dictionary()
+        cls.db_obj = db.DBConnection()
         return super().__new__(cls)
 
     def get_SCD_journeys(self,userid, db_name,verbos=0):
         try:
+            lstdays = []
             query = Path("queries\\SCD_Journeys_query.txt").read_text()
             query = query.replace("@userid", userid)
             # get a connection, if a connect cannot be made an exception will be raised here
-            engine = db.create_engine('postgresql+psycopg2://postgres:20081979@localhost/'+db_name)
-            connection = engine.connect()
+            ##engine = db.create_engine('postgresql+psycopg2://postgres:20081979@localhost/'+db_name)
+            ##connection = engine.connect()
+            connection = self.db_obj.conn
             if (verbos == 1):
                 print(query)
             ResultSet = connection.execute(query)
+
             dfJourneys = pd.DataFrame(ResultSet)
 
-            query2 = "SELECT distinct r.prestigeid,  daykey " \
-                     "FROM tbl_rawdata r " \
-                     "where PRESTIGEID = '" + userid + "' " \
-                     "order by daykey"
+            if dfJourneys.size == 0:
+                return dfJourneys, lstdays
 
-            if (verbos == 1):
-                print(query2)
-            ResultSet = connection.execute(query2)
-            dfdays = pd.DataFrame(ResultSet)
+            lstdays = dfJourneys['daykey'].unique()
+            #print(sorted(lstdays))
 
             if (verbos == 1):
                 print("'" + userid + "'" +" - journey data size " + str(dfJourneys.shape))
-                print("'" + userid + "'" + " - journey days size " + str(dfdays.shape))
+                print("'" + userid + "'" + " - journey days size " + str(lstdays.shape))
 
-            return dfJourneys,dfdays
+            return dfJourneys, lstdays
+
         except exc.SQLAlchemyError:
-            exit("Encountered general SQLAlchemyError!")
+            print("Encountered general SQLAlchemyError!")
+            return dfJourneys, lstdays
 
 
     def get_all_users(self,db_name, verbos=0):
         try:
             # get a connection, if a connect cannot be made an exception will be raised here
-            engine = db.create_engine('postgresql+psycopg2://postgres:20081979@localhost/'+db_name)
-            connection = engine.connect()
+            ##engine = db.create_engine('postgresql+psycopg2://postgres:20081979@localhost/'+db_name)
+            ##connection = engine.connect()
+            connection = self.db_obj.conn
 
-            query = "SELECT distinct r.prestigeid as UserId FROM tbl_rawdata r limit 100"
+            query = "SELECT distinct r.prestigeid as UserId FROM tbl_rawdata r "
             if (verbos == 1):
                 print(query)
             ResultSet = connection.execute(query)
@@ -68,9 +73,11 @@ class OysterJourney(object):
 
             if (verbos == 1):
                 print('User Data size' + str(dfUser.shape))
+
             return dfUser
         except exc.SQLAlchemyError:
-            exit("Encountered general SQLAlchemyError!")
+            print("Encountered general SQLAlchemyError!")
+            return dfUser
 
     # converts journeys dataframe row to Journey class object
     def convert_to_Journey(self,row, verbos):
