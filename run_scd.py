@@ -12,9 +12,9 @@ def run_all(name):
     verbos = 0
 
     # drop table , used to save the results
-
-
+    #source database name
     db_name = 'SCD_230722'
+    #results table
     tbl_name = 'bus_inference_scd'
 
     du.drop_db_table(db_name, tbl_name)
@@ -25,12 +25,12 @@ def run_all(name):
     print ('Processing ', end='')
     for ind1, row in dfUser.iterrows():
         print('.', end='')
-        if ind1 == 100:
+        if ind1 == 1:
             break
 
         # select one user from the list user, and loop through all the users
         userid = row['userid']
-#        userid = '63304617'
+        userid = '63304617'
         # 2. get user journeys and unique days
         dfJourneys, dfDays = oj_obj.get_SCD_journeys(userid, db_name, verbos)
 
