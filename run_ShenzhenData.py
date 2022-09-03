@@ -1,11 +1,11 @@
-import mylib.oyster_journeys as ott
+import mylib.shenzhen_journeys as ott
 from mylib import db_utils as du
 import pandas as pd
 from mylib import bus_inference as bi
 from mylib import data_model as dm
 
 def run_all(name):
-    oj_obj = ott.OysterJourney()
+    oj_obj = ott.ShenzhenJourney()
 #    dfData = ot.get_SCD_journeys('63304617')
 
     #verbos - use 1 for debugging and 0 for normal run
@@ -15,7 +15,7 @@ def run_all(name):
 
 
     db_name = 'Shenzhen_SCD'
-    tbl_name = 'bus_inference_scd'
+    tbl_name = 'shenzhen_bus_inference'  #results table
 
     du.drop_db_table(db_name, tbl_name)
     print ('Cleared DB table to sort the results. ')
@@ -30,7 +30,7 @@ def run_all(name):
             break
 
         # select one user from the list user, and loop through all the users
-        userid = row['userid']
+        userid = row['user_id']
         #print (userid)
 
         #userid = '10352511'
@@ -40,7 +40,7 @@ def run_all(name):
         if len(lstDays) == 0:
             continue
 
-        dfJourneys = dfJourneys.sort_values(['daykey', 'start_time'])
+        dfJourneys = dfJourneys.sort_values(['journey_date', 'start_time'])
 
         # create an empty list for user journeys
         lstJourneys = list()
@@ -52,7 +52,7 @@ def run_all(name):
             #print ('process_date', process_date)
 
             # ordered by date and time
-            dfJourneys_by_date = pd.DataFrame.copy(dfJourneys.loc[(dfJourneys['daykey'] == process_date)])
+            dfJourneys_by_date = pd.DataFrame.copy(dfJourneys.loc[(dfJourneys['journey_date'] == process_date)])
             dfJourneys_by_date.reset_index(inplace=True)
             #loop through all the journeys on the selected date
 
@@ -96,7 +96,7 @@ def run_all(name):
                     else:
                         journey_next = None
 
-                    journey_current = bi.infer_bus_end_station(journey_current,journey_next,journey_prev, len(dfJourneys_by_date), journey_first_of_day, verbos)
+                    journey_current = bi.infer_shenzhen_bus_end_station(journey_current,journey_next,journey_prev, len(dfJourneys_by_date), journey_first_of_day, verbos)
 
                     #print (journey_current)
 

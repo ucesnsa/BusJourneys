@@ -1,29 +1,12 @@
-select a.* from
-(SELECT distinct daykey, prestigeid, calendar_dt,transactiontype,
-       stationoffirstentry, r.nlc,timeoffirstentry,transactiontime,
-       ''::text as start_station_name,''::text as exit_station_name,
-       TO_CHAR((r.transactiontime || 'minute')::interval, 'HH24:MI:SS') as start_time,
-       TO_CHAR((r.timeoffirstentry || 'minute')::interval, 'HH24:MI:SS') as end_time,
-       direction, busstopid,routeid as busrouteid
-  FROM tbl_rawdata r inner join tbl_daykey d on r.daykey = d.date_key
-  where transactiontype = '12'
-  and PRESTIGEID = '@userid'
-  ) a
-
-union all
-
-select b.* from
-(SELECT daykey, prestigeid, calendar_dt,transactiontype,
-	stationoffirstentry, r.nlc,timeoffirstentry,transactiontime,
-	s1.station_nm as start_station_name,s2.station_nm as exit_station_name,
-	TO_CHAR((r.timeoffirstentry || 'minute')::interval, 'HH24:MI:SS') as start_time,
-	TO_CHAR((r.transactiontime || 'minute')::interval, 'HH24:MI:SS') as end_time,
-       direction, busstopid,routeid as busrouteid
-  FROM tbl_rawdata r inner join tbl_daykey d on r.daykey = d.date_key
-  left join tbl_station s1 on s1.nlc = r.stationoffirstentry
-  left join tbl_station s2 on s2.nlc = r.nlc
-  where transactiontype = '62'
-  and PRESTIGEID = '@userid'
-  and r.nlc <> r.stationoffirstentry
-  and (r.stationoffirstentry not in ( '-1','0' ))
-  ) b
+(select start_time::DATE as journey_date, userid as user_id, 1 as transport_mode, 
+'' as start_station,  start_time::TIME, '' as end_station, '' as end_time, 
+'' as start_station_lat_long, '' as end_station_lat_long,
+concat(latitude,',',longitude) as bus_start_station_lat_long, '' as bus_route_id, bus_plate_no
+from public.tbl_gps_bus_match_04min where dif is not null and rnk1=1 and userid = '@userid' )
+union all 
+(SELECT to_date(journeydate,'YYYY-MM-DD') as journey_date, cardid::text as user_id, transportmode as transport_mode,
+startstation as start_station, TO_TIMESTAMP(starttime, 'HH24:MI:SS')::TIME as start_time, endstation as end_station, endtime as end_time, 
+concat(startlat,',',startLon) as start_station_lat_long, concat(endlat,',' ,endLon) as end_station_lat_long,
+'' as bus_start_station_lat_long, '' as bus_route_id, '' as bus_plate_no
+FROM public.tbl_subway_clean
+where cardid::text = '@userid' )

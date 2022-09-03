@@ -57,3 +57,12 @@ def infer_bus_end_station(journey_current, journey_next, journey_prev, journey_c
         journey_current.EndStationInferred = journey_first_of_day.StartStation + '(RULE2)'
 
     return journey_current
+
+
+def infer_shenzhen_bus_end_station(journey_current, journey_next, journey_prev, journey_count, journey_first_of_day, verbos):
+    # main rule -  part 1
+    if journey_next != None:
+        journey_current.EndStationInferred = journey_next.StartStation
+
+
+    return journey_current

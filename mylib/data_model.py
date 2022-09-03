@@ -24,6 +24,25 @@ class Journey:
     BusStopId: str
     Direction: bool
 
+@dataclass(frozen=False, order=True)
+class JourneyShenzhen:
+    # UserId is the same as the prestigeid
+    UserId: str
+    JourneyDate: datetime
+    TransportMode: TransportEnum
+    StartTime: datetime
+    EndTime: datetime
+    StartStation: str
+    StartStationLoc: str
+    EndStation: str
+    EndStationLoc: str
+    StartStationInferred: str
+    EndStationInferred: str
+    IsLastJourney: bool
+    BusNo: str
+    BusStopLoc: str
+    Direction: bool
+
 @dataclass(frozen=True, order=True)
 class User:
     # UserId is the same as the prestigeid

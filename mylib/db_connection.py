@@ -6,10 +6,10 @@ from sqlalchemy import exc
 
 class DBConnection(object):
     conn = None
-    def __new__(cls):
+    def __new__(cls,e):
         if not hasattr(cls, 'instance'):
             cls.instance = super(DBConnection, cls).__new__(cls)
             db_name = 'scd_bus_journeys'
-            engine = db.create_engine('postgresql+psycopg2://postgres:20081979@localhost/' + db_name)
+            engine = db.create_engine('postgresql+psycopg2://postgres:20081979@localhost/' + e)
             cls.conn = engine.connect()
         return cls.instance

@@ -20,7 +20,9 @@ class ShenzhenJourney(object):
     db_obj = None
 
     def __new__(cls, *args, **kwargs):
-        print("Initialise OysterJourney class")
+        print("Initialise Shenzhen Journey class")
+        db_name = 'Shenzhen_SCD'
+        cls.db_obj = db.DBConnection(db_name)
         return super().__new__(cls)
 
     def get_SCD_journeys(self,userid, db_name,verbos=0):
@@ -39,7 +41,7 @@ class ShenzhenJourney(object):
             if dfJourneys.size == 0:
                 return dfJourneys, lstdays
 
-            lstdays = dfJourneys['daykey'].unique()
+            lstdays = dfJourneys['journey_date'].unique()
             #print(sorted(lstdays))
 
             if (verbos == 1):
@@ -57,7 +59,7 @@ class ShenzhenJourney(object):
         try:
             connection = self.db_obj.conn
 
-            query = "SELECT distinct r.prestigeid as UserId FROM tbl_rawdata r "
+            query = "SELECT user_id FROM public.shenzhen_users limit 5"
             if (verbos == 1):
                 print(query)
             ResultSet = connection.execute(query)
@@ -74,22 +76,19 @@ class ShenzhenJourney(object):
     # converts journeys dataframe row to Journey class object
     def convert_to_Journey(self,row, verbos):
         e1 = dm.TransportEnum
-        if str(row['transactiontype']) == '12':
+        if str(row['transport_mode']) == '1':
             e1 = dm.TransportEnum.BUS.name
-            try:
-                #print(self.bus_stop_dic[str(row['busstopid'])].Stop_Name)
-                start_station_name = self.bus_stop_dic[str(row['busstopid'])].Stop_Name
-            except KeyError:
-                #print ('Key Error',str(row['busstopid']))
-                start_station_name ='N/A'
-        elif str(row['transactiontype']) != '12':
+            start_station_name ='N/A'
+        elif str(row['transport_mode']) == '2':
             e1 = dm.TransportEnum.RAIL.name
-            start_station_name = row['start_station_name']
+
 
         #if (verbos == 1):
-        #   print (row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'])
+        #print (row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'])
 
-        j = dm.Journey(row['prestigeid'], row['calendar_dt'],e1,row['start_time'], row['end_time'], start_station_name, row['exit_station_name'],'NA','NA',False,row['busrouteid'],row['busstopid'],row['direction'])
+        j = dm.JourneyShenzhen(row['user_id'], row['journey_date'],e1,row['start_time'], row['end_time'], row['start_station'],row['start_station_lat_long'],
+                               row['end_station'],row['end_station_lat_long'],'NA','NA','NA',
+                               row['bus_route_id'],row['bus_start_station_lat_long'],'NA')
 
         if (verbos == 1):
             print(j)
