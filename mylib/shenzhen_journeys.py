@@ -86,10 +86,25 @@ class ShenzhenJourney(object):
         #if (verbos == 1):
         #print (row['prestigeid'], row['date_key'],e1,row['start_time'], row['end_time'], row['stationofentrykey'], row['exit_station_name'])
 
-        j = dm.JourneyShenzhen(row['user_id'], row['journey_date'],e1,row['start_time'], row['end_time'], row['start_station'],row['start_station_lat_long'],
-                               row['end_station'],row['end_station_lat_long'],'NA','NA','NA',
-                               row['bus_route_id'],row['bus_start_station_lat_long'],'NA')
+        j = dm.JourneyShenzhen(UserId = row['user_id'],
+                               JourneyDate = row['journey_date'],
+                               TransportMode= e1,
+                               StartTime = row['start_time'],
+                               EndTime = row['end_time'],
+                               StartStation = row['start_station'],
+                               EndStation = row['end_station'],
+                               StartStationInferred = 'NA',
+                               EndStationInferred = 'NA',
+                               IsLastJourney = False,
+                               BusNo = row['bus_route_id'],
+                               BusStopId = 'NA',
+                               Direction = 'N/A',
+                               StartStationLoc = row['start_station_lat_long'],
+                               EndStationLoc = row['end_station_lat_long'],
+                               BusStopLoc = row['bus_start_station_lat_long']
+                               )
 
         if (verbos == 1):
             print(j)
         return j
+

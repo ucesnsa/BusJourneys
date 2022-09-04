@@ -2,7 +2,7 @@
 '' as start_station,  start_time::TIME, '' as end_station, '' as end_time, 
 '' as start_station_lat_long, '' as end_station_lat_long,
 concat(latitude,',',longitude) as bus_start_station_lat_long, '' as bus_route_id, bus_plate_no
-from public.tbl_gps_bus_match_04min where dif is not null and rnk1=1 and userid = '@userid' )
+from public.tbl_gps_bus_match_2min where dif is not null and rnk1=1 and userid = '@userid' )
 union all 
 (SELECT to_date(journeydate,'YYYY-MM-DD') as journey_date, cardid::text as user_id, transportmode as transport_mode,
 startstation as start_station, TO_TIMESTAMP(starttime, 'HH24:MI:SS')::TIME as start_time, endstation as end_station, endtime as end_time, 
