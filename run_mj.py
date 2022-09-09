@@ -1,6 +1,6 @@
 import pandas as pd
-from mylib import matched_journeys as mj
-from mylib import oyster_journeys as oj
+from mylib import processor_london_match as mj
+from mylib import processor_london as oj
 from mylib import data_model as dm
 from mylib import bus_inference as bi
 from mylib import db_utils as du

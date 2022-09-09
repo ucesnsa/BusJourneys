@@ -29,6 +29,7 @@ class JourneyShenzhen(Journey):
     StartStationLoc: str
     EndStationLoc: str
     BusStopLoc: str
+    ValidEndStationInferred: str
 
 @dataclass(frozen=True, order=True)
 class User:

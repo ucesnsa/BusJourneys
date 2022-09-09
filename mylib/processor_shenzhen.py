@@ -15,7 +15,10 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class ShenzhenJourney(object):
+class ShenzhenProcessor(object):
+    def __repr__(self):
+        return 'Shenzhen Processor'
+
     __metaclass__ = Singleton
     db_obj = None
 
@@ -59,7 +62,7 @@ class ShenzhenJourney(object):
         try:
             connection = self.db_obj.conn
 
-            query = "SELECT user_id FROM public.shenzhen_users limit 5"
+            query = "SELECT user_id FROM public.shenzhen_users  where string_agg = '2' limit 10000"
             if (verbos == 1):
                 print(query)
             ResultSet = connection.execute(query)
@@ -101,7 +104,8 @@ class ShenzhenJourney(object):
                                Direction = 'N/A',
                                StartStationLoc = row['start_station_lat_long'],
                                EndStationLoc = row['end_station_lat_long'],
-                               BusStopLoc = row['bus_start_station_lat_long']
+                               BusStopLoc = row['bus_start_station_lat_long'],
+                               ValidEndStationInferred='NA'
                                )
 
         if (verbos == 1):

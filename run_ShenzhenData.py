@@ -1,11 +1,14 @@
-import mylib.shenzhen_journeys as ott
+import mylib.processor_shenzhen as ott
 from mylib import db_utils as du
 import pandas as pd
 from mylib import bus_inference as bi
 from mylib import data_model as dm
+from mylib import validation_shenzhen as va
+import dataclasses
 
 def run_all(name):
-    oj_obj = ott.ShenzhenJourney()
+    oj_obj = ott.ShenzhenProcessor()
+    print (repr(oj_obj))
 #    dfData = ot.get_SCD_journeys('63304617')
 
     #verbos - use 1 for debugging and 0 for normal run
@@ -15,9 +18,11 @@ def run_all(name):
 
 
     db_name = 'Shenzhen_SCD'
-    tbl_name = 'shenzhen_bus_inference'  #results table
+    tbl_name_infer = 'shenzhen_bus_inference'  #inferrence results
+    tbl_name_validate = 'shenzhen_bus_valid'    #validation table, using subways journeys
 
-    du.drop_db_table(db_name, tbl_name)
+    du.drop_db_table(db_name, tbl_name_infer)
+    du.drop_db_table(db_name, tbl_name_validate)
     print ('Cleared DB table to sort the results. ')
 
     # get all users
@@ -26,8 +31,8 @@ def run_all(name):
     for ind1, row in dfUser.iterrows():
         print('.', end='')
         # ind1 determines how many users to be processed
-        if ind1 == 10000:
-            break
+        #if ind1 == 10000:
+        #    break
 
         # select one user from the list user, and loop through all the users
         userid = row['user_id']
@@ -45,6 +50,9 @@ def run_all(name):
         # create an empty list for user journeys
         lstJourneys = list()
 
+        # list to store the validation journeys
+        lst_valid_journeys = list()
+
         journey_first_of_day = None
         # 3. select days in order
         for row in lstDays:
@@ -54,9 +62,12 @@ def run_all(name):
             # ordered by date and time
             dfJourneys_by_date = pd.DataFrame.copy(dfJourneys.loc[(dfJourneys['journey_date'] == process_date)])
             dfJourneys_by_date.reset_index(inplace=True)
+
+            # proceed only if there are more than 1 journey in the day's data for the user
+            if len(dfJourneys_by_date) <= 1:
+                continue
+
             #loop through all the journeys on the selected date
-
-
             for index, row in dfJourneys_by_date.iterrows():
                 #print (row)
                 journey_current = oj_obj.convert_to_Journey(row, verbos=0)
@@ -65,46 +76,41 @@ def run_all(name):
                 if index == 0:
                     journey_first_of_day = journey_current
 
-                # proceed only if there are more than 1 journey in the day's data for the user
-                if len(dfJourneys_by_date) <= 1:
-                    continue
-
+                # check if it is last journey of the day
                 if index == len(dfJourneys_by_date) -1:
                     journey_current.IsLastJourney = True
 
+                # get next and previous journey for the inference algorithm
                 if index+1 < len(dfJourneys_by_date) :
                     next_index = index + 1
+                    journey_next = oj_obj.convert_to_Journey(dfJourneys_by_date.iloc[next_index], verbos=0)
                 else:
-                    next_index = -1
+                    journey_next = None
 
                 if index - 1 >= 0 :
                     prev_index = index - 1
+                    journey_prev = oj_obj.convert_to_Journey(dfJourneys_by_date.iloc[prev_index], verbos=0)
                 else:
-                    prev_index = -1
+                    journey_prev = None
 
+                # run the bus inference for the bus journeys
                 if journey_current.TransportMode == dm.TransportEnum.BUS.name:
-
-                    if prev_index != -1:
-                        #print(dfJourneys_by_date.iloc[prev_index])
-                        journey_prev = oj_obj.convert_to_Journey(dfJourneys_by_date.iloc[prev_index], verbos=0)
-                    else:
-                        journey_prev = None
-
-                    if next_index != -1:
-                        #print(dfJourneys_by_date.iloc[next_index])
-                        journey_next = oj_obj.convert_to_Journey(dfJourneys_by_date.iloc[next_index], verbos=0)
-                    else:
-                        journey_next = None
-
                     journey_current = bi.infer_shenzhen_bus_end_station(journey_current,journey_next,journey_prev, len(dfJourneys_by_date), journey_first_of_day, verbos)
-
                     #print (journey_current)
 
-                # add new journey to the list
+                # run validation code the subway journeys only
+                if journey_current.TransportMode != dm.TransportEnum.BUS.name:
+                    journey_current2 = dataclasses.replace(journey_current)
+                    journey_current2 = va.validate(journey_current2,journey_next,journey_prev, len(dfJourneys_by_date), journey_first_of_day, verbos)
+                    lst_valid_journeys.append(journey_current2)
                 lstJourneys.append(journey_current)
 
+
         dfJourneyDataFinal = pd.DataFrame(lstJourneys)
-        du.write_to_db_table(dfJourneyDataFinal, db_name, tbl_name)
+        du.write_to_db_table(dfJourneyDataFinal, db_name, tbl_name_infer)
+
+        dfValidJourneyDataFinal = pd.DataFrame(lst_valid_journeys)
+        du.write_to_db_table(dfValidJourneyDataFinal, db_name,tbl_name_validate)
 
     print (' complete')
     print ('Check db table for results')
