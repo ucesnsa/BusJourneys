@@ -56,6 +56,9 @@ def run_all(name):
             dfJourneys_by_date.reset_index(inplace=True)
             #loop through all the journeys on the selected date
 
+            # proceed only if there are more than 1 journey in the day's data for the user
+            if len(dfJourneys_by_date) <= 1:
+                continue
 
             for index, row in dfJourneys_by_date.iterrows():
                 #print (row)
@@ -65,42 +68,25 @@ def run_all(name):
                 if index == 0:
                     journey_first_of_day = journey_current
 
-                # proceed only if there are more than 1 journey in the day's data for the user
-                if len(dfJourneys_by_date) <= 1:
-                    continue
-
                 if index == len(dfJourneys_by_date) -1:
                     journey_current.IsLastJourney = True
 
                 if index+1 < len(dfJourneys_by_date) :
                     next_index = index + 1
+                    journey_next = oj_obj.convert_to_Journey(dfJourneys_by_date.iloc[next_index], verbos=0)
                 else:
-                    next_index = -1
+                    journey_next = None
 
                 if index - 1 >= 0 :
                     prev_index = index - 1
+                    journey_prev = oj_obj.convert_to_Journey(dfJourneys_by_date.iloc[prev_index], verbos=0)
                 else:
-                    prev_index = -1
+                    journey_prev = None
 
                 if journey_current.TransportMode == dm.TransportEnum.BUS.name:
-
-                    if prev_index != -1:
-                        #print(dfJourneys_by_date.iloc[prev_index])
-                        journey_prev = oj_obj.convert_to_Journey(dfJourneys_by_date.iloc[prev_index], verbos=0)
-                    else:
-                        journey_prev = None
-
-                    if next_index != -1:
-                        #print(dfJourneys_by_date.iloc[next_index])
-                        journey_next = oj_obj.convert_to_Journey(dfJourneys_by_date.iloc[next_index], verbos=0)
-                    else:
-                        journey_next = None
-
                     journey_current = bi.infer_bus_end_station(journey_current,journey_next,journey_prev, len(dfJourneys_by_date), journey_first_of_day, verbos)
 
                     #print (journey_current)
-
-                # add new journey to the list
                 lstJourneys.append(journey_current)
 
         dfJourneyDataFinal = pd.DataFrame(lstJourneys)
