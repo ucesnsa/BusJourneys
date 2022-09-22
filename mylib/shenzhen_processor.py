@@ -57,14 +57,73 @@ class ShenzhenProcessor(object):
             print("Encountered general SQLAlchemyError!")
             return dfJourneys, lstdays
 
-
-    def get_all_users(self,db_name, verbos=0):
+    # this is used for inference and validation
+    def get_users_homeloc(self, db_name,journey_type, verbos=0):
         try:
             connection = self.db_obj.conn
+            # select users that have journeys of the type
+            # train (2) , bus and train combination ('1,2' and '2,1')
+            # bus only users 1 are excluded, because not possible to get the home location,
+            # if the end location is not avialable
+            query = "SELECT user_id FROM public.shenzhen_users shenzhen_users "
 
-            query = "SELECT user_id FROM public.shenzhen_users  where string_agg = '2' limit 10000"
+            if journey_type == dm.TransportEnum.RAIL:
+                journey_type_code = "where string_agg in ('2') "
+            elif journey_type == dm.TransportEnum.BUS_RAIL_ONLY:
+                journey_type_code = "where string_agg in ('1,2','2,1')"
+            elif journey_type == dm.TransportEnum.BUS_RAIL_RAIL:
+                journey_type_code = "where string_agg in ('1,2','2,1','2')"
+            else:
+                journey_type_code = ""
+
+            query = query + journey_type_code
+
             if (verbos == 1):
                 print(query)
+            ResultSet = connection.execute(query)
+            dfUser = pd.DataFrame(ResultSet)
+
+            if (verbos == 1):
+                print('User Data size' + str(dfUser.shape))
+
+            return dfUser
+        except exc.SQLAlchemyError:
+            print("Encountered general SQLAlchemyError!")
+            return dfUser
+
+    # this is only used in the identification of home location
+    # use max_user to limit the users returned , use -1 or all users
+    def get_users(self, db_name,journey_type,max_user, verbos=0):
+        try:
+            connection = self.db_obj.conn
+            # select users that have journeys of the type
+            # train (2) , bus and train combination ('1,2' and '2,1')
+            # bus only users 1 are excluded, because not possible to get the home location,
+            # if the end location is not avialable
+
+            query = "SELECT a.user_id, b.homeLocation,a.string_agg FROM public.shenzhen_users a " \
+                    "inner join public.user_info_infer b on a.user_id = b.UserId " \
+                    "where b.homeFoundCount > 3 "
+
+            if journey_type == dm.TransportEnum.RAIL:
+                journey_type_code = "and string_agg in ('2') "
+            elif journey_type == dm.TransportEnum.BUS_RAIL_ONLY:
+                journey_type_code = "and string_agg in ('1,2','2,1') "
+            elif journey_type == dm.TransportEnum.BUS_RAIL_RAIL:
+                journey_type_code = "and string_agg in ('1,2','2,1','2') "
+            elif journey_type == dm.TransportEnum.BUS_RAIL_BUS:
+                journey_type_code = "and string_agg in ('1,2','2,1','1') "
+            else:
+                journey_type_code = ""
+
+            if max_user != None and max_user > 0 :
+                query = query +  journey_type_code + ' limit ' + str(max_user)
+            else:
+                query = query + journey_type_code
+
+            if (verbos == 1):
+                print(query)
+
             ResultSet = connection.execute(query)
             dfUser = pd.DataFrame(ResultSet)
 

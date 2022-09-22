@@ -3,9 +3,12 @@ import datetime
 from enum import Enum
 
 class TransportEnum(Enum):
-    BUS = 1
-    RAIL = 2
-    TRAM = 3
+    BUS = 1                 # only bus
+    RAIL = 2                # only train
+    TRAM = 3                # only tram
+    BUS_RAIL_ONLY = 12      #only bus and train combination
+    BUS_RAIL_RAIL = 122     # only bus and train combination, and train only
+    BUS_RAIL_BUS = 112      # only bus and train combination, and bus only
 
 @dataclass(frozen=False, order=True)
 class Journey:
@@ -38,6 +41,10 @@ class User:
     HomeLocation: str
     WorkLocation: str
 
+
+@dataclass(frozen=True, order=True)
+class ShenzhenUser(User):
+    HomeFoundCount: int
 
 
 @dataclass(frozen=False, order=True)

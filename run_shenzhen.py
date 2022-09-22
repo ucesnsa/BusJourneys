@@ -1,32 +1,53 @@
-import mylib.processor_shenzhen as ott
+
 from mylib import db_utils as du
 import pandas as pd
-from mylib import bus_inference as bi
 from mylib import data_model as dm
-from mylib import validation_shenzhen as va
+from mylib import data_model as dm
+from mylib import bus_inference as bi
+from mylib import shenzhen_processor as ott
+from mylib import shenzhen_validation as va
+from mylib import shenzhen_home_loc as hl
+
 import dataclasses
 
-def run_all(name):
-    oj_obj = ott.ShenzhenProcessor()
-    print (repr(oj_obj))
-#    dfData = ot.get_SCD_journeys('63304617')
+db_name = 'Shenzhen_SCD'
+tbl_name_infer = 'shenzhen_bus_inference'  # inferrence results
+tbl_name_validate = 'shenzhen_bus_valid'  # validation table, using subways journeys
+oj_obj = ott.ShenzhenProcessor()
 
-    #verbos - use 1 for debugging and 0 for normal run
-    verbos = 0
+#verbos - use 1 for debugging and 0 for normal run
+verbos = 0
 
-    # drop table , used to save the results
-
-
-    db_name = 'Shenzhen_SCD'
-    tbl_name_infer = 'shenzhen_bus_inference'  #inferrence results
-    tbl_name_validate = 'shenzhen_bus_valid'    #validation table, using subways journeys
-
+def run_infer():
     du.drop_db_table(db_name, tbl_name_infer)
+    print ('Cleared DB table to sort the results. ')
+
+    # select the users required to run the validation using the TransportEnum
+    # inference is done using the bus_rail and bus only users
+    dfUser = oj_obj.get_users(db_name,dm.TransportEnum.BUS_RAIL_BUS,100, verbos)
+
+    #True if you want to run with HomeLocation else False
+    # this choice will impact if Stage 1 of the algorithm is used for Inference or not
+    run_all('infer', dfUser, False)
+
+
+def run_valid():
     du.drop_db_table(db_name, tbl_name_validate)
     print ('Cleared DB table to sort the results. ')
 
-    # get all users
-    dfUser = oj_obj.get_all_users(db_name, verbos)
+    # select the users required to run the validation using the TransportEnum
+    # validation is done using train only users
+    dfUser = oj_obj.get_users(db_name,dm.TransportEnum.RAIL,15000, verbos)
+
+    #True if you want to run with HomeLocation else False
+    # this choice will impact if Stage 1 of the algorithm is used for validation or not
+    run_all('valid', dfUser, True)
+
+
+def run_all(name ,dfUser, runwithHomeloc):
+    oj_obj = ott.ShenzhenProcessor()
+    print (repr(oj_obj))
+
     print ('Processing ', end='')
     for ind1, row in dfUser.iterrows():
         print('.', end='')
@@ -36,6 +57,12 @@ def run_all(name):
 
         # select one user from the list user, and loop through all the users
         userid = row['user_id']
+        if runwithHomeloc == True :
+            homeloc = row['homelocation']
+        else:
+            homeloc = None;
+
+
         #print (userid)
 
         #userid = '10352511'
@@ -94,23 +121,24 @@ def run_all(name):
                     journey_prev = None
 
                 # run the bus inference for the bus journeys
-                if journey_current.TransportMode == dm.TransportEnum.BUS.name:
-                    journey_current = bi.infer_shenzhen_bus_end_station(journey_current,journey_next,journey_prev, len(dfJourneys_by_date), journey_first_of_day, verbos)
+                if name == 'infer' and journey_current.TransportMode == dm.TransportEnum.BUS.name:
+                    journey_current = bi.infer_shenzhen_bus_end_station(journey_current,journey_next, len(dfJourneys_by_date), journey_first_of_day,homeloc, verbos)
+                    lstJourneys.append(journey_current)
                     #print (journey_current)
 
                 # run validation code the subway journeys only
-                if journey_current.TransportMode != dm.TransportEnum.BUS.name:
+                if name == 'valid' and journey_current.TransportMode != dm.TransportEnum.BUS.name:
                     journey_current2 = dataclasses.replace(journey_current)
-                    journey_current2 = va.validate(journey_current2,journey_next,journey_prev, len(dfJourneys_by_date), journey_first_of_day, verbos)
+                    journey_current2 = va.validate(journey_current2,journey_next, len(dfJourneys_by_date), journey_first_of_day,homeloc, verbos)
                     lst_valid_journeys.append(journey_current2)
-                lstJourneys.append(journey_current)
 
+            if name == 'infer':
+                dfJourneyDataFinal = pd.DataFrame(lstJourneys)
+                du.write_to_db_table(dfJourneyDataFinal, db_name, tbl_name_infer)
 
-        dfJourneyDataFinal = pd.DataFrame(lstJourneys)
-        du.write_to_db_table(dfJourneyDataFinal, db_name, tbl_name_infer)
-
-        dfValidJourneyDataFinal = pd.DataFrame(lst_valid_journeys)
-        du.write_to_db_table(dfValidJourneyDataFinal, db_name,tbl_name_validate)
+            if name == 'valid':
+                dfValidJourneyDataFinal = pd.DataFrame(lst_valid_journeys)
+                du.write_to_db_table(dfValidJourneyDataFinal, db_name,tbl_name_validate)
 
     print (' complete')
     print ('Check db table for results')
@@ -119,14 +147,15 @@ def run_all(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-#    db_name = 'scd_bus_journeys'
-#    tbl_name = 'bus_inference_scd'
 
-    run_all('PyCharm')
-#    du.drop_db_table('SCD_230722', 'test_tbl')
-#    oj_obj = ott.OysterJourney()
-#    dc = oj_obj.bus_stop_dic
-#    print('dc length',len(dc))
-#    print('test', dc['26826'].Stop_Name)
-#    userid = '63304617'
-#    oj_obj.get_SCD_journeys(userid, db_name)
+    # running home location identification algorithm first
+    # running for all 2 million users can take hours , output table is Shenzhen_SCD.user_info_infer
+    # hl.run_all_home_loc('Shenzhen Home Location')
+
+
+    # run the main code to for bus inference and validation using the train dataset
+    # for validation use the train only dataset
+    # for inference of bus end station both datasets
+    #run_all('PyCharm')
+    #run_infer()
+    run_valid()
