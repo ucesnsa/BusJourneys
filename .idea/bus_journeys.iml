@@ -4,9 +4,10 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (BusJourneys)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (bus_journeys)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="ScratchPad" />
     <orderEntry type="module" module-name="pythonProject" />
+    <orderEntry type="module" module-name="transport_risk_profile" />
   </component>
 </module>

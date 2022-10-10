@@ -24,11 +24,12 @@ def run_infer():
 
     # select the users required to run the validation using the TransportEnum
     # inference is done using the bus_rail and bus only users
-    dfUser = oj_obj.get_users(db_name,dm.TransportEnum.BUS_RAIL_BUS,100, verbos)
+    # max_user None means , it will run for all users
+    dfUser = oj_obj.get_users(db_name,dm.TransportEnum.BUS_RAIL_BUS,15000, verbos)
 
     #True if you want to run with HomeLocation else False
     # this choice will impact if Stage 1 of the algorithm is used for Inference or not
-    run_all('infer', dfUser, False)
+    run_all('infer', dfUser, True)
 
 
 def run_valid():
@@ -37,7 +38,8 @@ def run_valid():
 
     # select the users required to run the validation using the TransportEnum
     # validation is done using train only users
-    dfUser = oj_obj.get_users(db_name,dm.TransportEnum.RAIL,15000, verbos)
+    # max_user None means , it will run for all users
+    dfUser = oj_obj.get_users(db_name,dm.TransportEnum.RAIL,12000, verbos)
 
     #True if you want to run with HomeLocation else False
     # this choice will impact if Stage 1 of the algorithm is used for validation or not
@@ -157,5 +159,5 @@ if __name__ == '__main__':
     # for validation use the train only dataset
     # for inference of bus end station both datasets
     #run_all('PyCharm')
-    #run_infer()
-    run_valid()
+    run_infer()
+    #run_valid()
