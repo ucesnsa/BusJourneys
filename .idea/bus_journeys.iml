@@ -10,4 +10,7 @@
     <orderEntry type="module" module-name="pythonProject" />
     <orderEntry type="module" module-name="transport_risk_profile" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="" />
+  </component>
 </module>
