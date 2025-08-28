@@ -26,4 +26,3 @@ Sari Aslam, N.; Barros, J.; Lin, H.; Murcio, R.; Bei, H. Alighting location esti
 }
 ```
 
-If you use this code in your research, please consider citing our paper.
